@@ -390,10 +390,18 @@ private:
             qcis.push_back(qi);
         }
 
-        std::vector<const char*> devExts = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-            "VK_KHR_portability_subset",
-        };
+        uint32_t extCount = 0;
+        vkEnumerateDeviceExtensionProperties(physDev, nullptr, &extCount, nullptr);
+        std::vector<VkExtensionProperties> available(extCount);
+        vkEnumerateDeviceExtensionProperties(physDev, nullptr, &extCount, available.data());
+
+        std::vector<const char*> devExts;
+        for (const auto& ext : available) {
+            if (std::string(ext.extensionName) == VK_KHR_SWAPCHAIN_EXTENSION_NAME ||
+                std::string(ext.extensionName) == "VK_KHR_portability_subset") {
+                devExts.push_back(ext.extensionName);
+            }
+        }
 
         VkDeviceCreateInfo ci{};
         ci.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
